@@ -2,25 +2,28 @@
 
 module Main where
 
+import Data.Int
+import Data.Time
+import Data.Time.Clock.POSIX
 import System.IO
-import System.Clock
--- import Control.Exception
-
-import Formatting
-import Formatting.Clock
 import qualified Data.ByteString as B
+import Data.Fixed (Pico)
 
+
+secondsSinceEpoch :: UTCTime -> Pico
+secondsSinceEpoch =
+    nominalDiffTimeToSeconds . utcTimeToPOSIXSeconds
 
 main :: IO ()
 main = do
-    start <- getTime Monotonic
+    start <- getCurrentTime
 
     handle <- openBinaryFile "randomfile" ReadMode
     readChunkWhile handle
     hClose handle
 
-    end <- getTime Monotonic
-    fprint (timeSpecs % "\n") start end
+    end <- getCurrentTime
+    print $ (secondsSinceEpoch end - secondsSinceEpoch start)
 
 
 readChunkWhile handle = do
