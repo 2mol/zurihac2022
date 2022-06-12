@@ -1,26 +1,30 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Main where
 
-import Data.Text (Text)
+import System.IO
+import System.Clock
+-- import Control.Exception
+
+import Formatting
+import Formatting.Clock
+import qualified Data.ByteString as B
 
 
 main :: IO ()
-main = putStrLn "Hello, Haskell!"
+main = do
+    start <- getTime Monotonic
 
-data Energy
-    = Colorless | Grass | Fire | Water | Lightning
-    | Fighting | Psychic | Darkness | Metal | Dragon
+    handle <- openBinaryFile "randomfile" ReadMode
+    readChunkWhile handle
+    hClose handle
 
-type Natural = Int
+    end <- getTime Monotonic
+    fprint (timeSpecs % "\n") start end
 
-data Attack = Attack
-    { attackName :: Text
-    , cost :: [Energy]
-    , damage :: Natural
-    }
 
-data Card = Card
-    { name :: Text
-    , typ :: Energy
-    , hp :: Natural
-    , attacks :: [Attack]
-    }
+readChunkWhile handle = do
+    bla <- B.hGetSome handle (4*1024)
+    if B.length bla > 0
+        then readChunkWhile handle
+        else pure ()
